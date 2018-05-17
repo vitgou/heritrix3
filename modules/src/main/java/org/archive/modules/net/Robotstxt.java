@@ -226,6 +226,7 @@ public class Robotstxt implements Serializable {
      */
     public RobotsDirectives getDirectivesFor(String ua, boolean useFallbacks) {
         // find matching ua
+        ua = ua.toLowerCase();
         for(String uaListed : namedUserAgents) {
             if(ua.indexOf(uaListed)>-1) {
                 return agentsToDirectives.get(uaListed);
