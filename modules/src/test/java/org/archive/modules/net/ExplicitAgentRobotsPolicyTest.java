@@ -30,7 +30,7 @@ import junit.framework.TestCase;
 /**
  * Test for ExplicitAgentRobotsPolicy
  *
- * @author gojomo
+ * @author dbicho
  */
 public class ExplicitAgentRobotsPolicyTest extends TestCase {
 
@@ -38,14 +38,14 @@ public class ExplicitAgentRobotsPolicyTest extends TestCase {
         BufferedReader reader = new BufferedReader(
                 new StringReader(
                         "User-agent: Arquivo-web-crawler\n" +
-                                "Disallow: /wayback/\n" +
-                                "Allow: /wayback/test/" +
-                                "\n"+
-                                "User-agent: *\n" +
-                                "Disallow: /img/\n"+
-                                "\n"+
-                                "User-agent: ia\n" +
-                                "Disallow: /img/\n"
+                            "Disallow: /wayback/\n" +
+                            "Allow: /wayback/test/" +
+                            "\n" +
+                            "User-agent: *\n" +
+                            "Disallow: /img/\n"+
+                            "\n" +
+                            "User-agent: ia\n" +
+                            "Disallow: /img/\n"
                 ));
         return new Robotstxt(reader);
     }
@@ -54,15 +54,15 @@ public class ExplicitAgentRobotsPolicyTest extends TestCase {
         Robotstxt robots = sampleRobots1();
 
         ExplicitAgentRobotsPolicy policy = new ExplicitAgentRobotsPolicy();
-        policy.setUserAgent("arquivo-web-crawler");
-        CrawlURI curi_1 = new CrawlURI(UURIFactory.getInstance("http://www.example.com/wayback/whatever"));
-        CrawlURI curi_3 = new CrawlURI(UURIFactory.getInstance("http://www.example.com/wayback/test/whatever"));
 
-        assertTrue(policy.allows("arquivo-web-crawler", curi_3, robots));
+        CrawlURI curi_1 = new CrawlURI(UURIFactory.getInstance("http://www.example.com/wayback/whatever"));
+        CrawlURI curi_2 = new CrawlURI(UURIFactory.getInstance("http://www.example.com/wayback/test/whatever"));
+
+        assertTrue(policy.allows("arquivo-web-crawler", curi_2, robots));
         assertFalse(policy.allows("arquivo-web-crawler", curi_1, robots));
 
-        CrawlURI curi_2 = new CrawlURI(UURIFactory.getInstance("http://www.example.com/img/whatever"));
-        assertTrue(policy.allows("arquivo-web-crawler", curi_2, robots));
+        CrawlURI curi_3 = new CrawlURI(UURIFactory.getInstance("http://www.example.com/img/whatever"));
+        assertTrue(policy.allows("arquivo-web-crawler", curi_3, robots));
     }
 
 }
