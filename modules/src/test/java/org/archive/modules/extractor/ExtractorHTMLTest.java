@@ -486,5 +486,29 @@ public class ExtractorHTMLTest extends StringExtractorTestBase {
         }
 
     }
+
+    public void testObservadorImagesAttributes() throws URIException {
+        CrawlURI curi = new CrawlURI(UURIFactory.getInstance("http://www.example.com/"));
+
+        CharSequence cs = "<img class=\"img_16x9 resrc\" data-src=\"https://s3.observador.pt/wp-content/uploads/2018/11/09214716/25055662_770x433_acf_cropped.jpg\" alt src=\"https://bordalo.observador.pt/700x,q85/https://s3.observador.pt/wp-content/uploads/2018/11/09214716/25055662_770x433_acf_cropped.jpg\">";
+
+        getExtractor().extract(curi, cs);
+
+        CrawlURI[] links = curi.getOutLinks().toArray(new CrawlURI[0]);
+        Arrays.sort(links);
+
+        String[] dest = {
+                "https://bordalo.observador.pt/700x,q85/https://s3.observador.pt/wp-content/uploads/2018/11/09214716/25055662_770x433_acf_cropped.jpg",
+                "https://s3.observador.pt/wp-content/uploads/2018/11/09214716/25055662_770x433_acf_cropped.jpg",
+        };
+
+        for(int i = 0; i < links.length; i++){
+            System.out.println(links[i].getURI());
+            assertEquals("outlink from image:", dest[i], links[i].getURI());
+        }
+
+        assertEquals("number of outlinks extract from image" ,dest.length, links.length);
+        assertTrue(true);
+    }
         
 }

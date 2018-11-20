@@ -188,7 +188,7 @@ public class ExtractorHTML extends ContentExtractor implements InitializingBean 
     static final String EACH_ATTRIBUTE_EXTRACTOR =
       "(?is)\\s?((href)|(action)|(on\\w*)" // 1, 2, 3, 4 
      +"|((?:src)|(?:srcset)|(?:lowsrc)|(?:background)|(?:cite)" // ...
-     +"|(?:longdesc)|(?:usemap)|(?:profile)|(?:datasrc))" // 5
+     +"|(?:longdesc)|(?:usemap)|(?:profile)|(?:datasrc)|(?:data-src))" // 5
      +"|(codebase)|((?:classid)|(?:data))|(archive)|(code)" // 6, 7, 8, 9
      +"|(value)|(style)|(method)" // 10, 11, 12
      +"|([-\\w]{1,"+MAX_ATTR_NAME_REPLACE+"}))" // 13
