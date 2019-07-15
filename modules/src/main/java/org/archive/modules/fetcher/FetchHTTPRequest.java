@@ -704,12 +704,18 @@ public class FetchHTTPRequest {
             HttpHost proxy = config.getProxy();
 
             final HttpHost target;
-            if (host.getPort() > 0
-                    && (host.getSchemeName().equalsIgnoreCase("http") && host.getPort() == 80
-                    || host.getSchemeName().equalsIgnoreCase("https") && host.getPort() == 443)) {
-                target = new HttpHost(host.getHostName(), -1, host.getSchemeName());
+
+            if (host.getPort() == -1){
+                if (host.getSchemeName().equalsIgnoreCase("http")){
+                    target = new HttpHost(host.getHostName(), 80, host.getSchemeName());
+                } else if (host.getSchemeName().equalsIgnoreCase("https")){
+                    target = new HttpHost(host.getHostName(), 443, host.getSchemeName());
+                }
+                else {
+                    target = new HttpHost(host.getHostName(), -1, host.getSchemeName());
+                }
             } else {
-                target = host;
+                target = new HttpHost(host.getHostName(), -1, host.getSchemeName());
             }
             final boolean secure = target.getSchemeName().equalsIgnoreCase("https");
             if (proxy == null) {
