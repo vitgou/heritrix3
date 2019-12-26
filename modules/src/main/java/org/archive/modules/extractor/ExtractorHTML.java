@@ -31,6 +31,7 @@ import java.util.regex.Matcher;
 
 import org.apache.commons.httpclient.URIException;
 import org.archive.io.ReplayCharSequence;
+import org.archive.modules.CoreAttributeConstants;
 import org.archive.modules.CrawlMetadata;
 import org.archive.modules.CrawlURI;
 import org.archive.modules.net.RobotsPolicy;
@@ -421,9 +422,11 @@ public class ExtractorHTML extends ContentExtractor implements InitializingBean 
                     // other HREFs treated as links
                     processLink(curi, value, context);
                 }
-                if (elementStr.equalsIgnoreCase(BASE)) {
+                // Set the relative or absolute base URI if it's not already been modified. 
+                // See https://github.com/internetarchive/heritrix3/pull/209
+                if (elementStr.equalsIgnoreCase(BASE) && !curi.containsDataKey(CoreAttributeConstants.A_HTML_BASE)) {
                     try {
-                        UURI base = UURIFactory.getInstance(value.toString());
+                        UURI base = UURIFactory.getInstance(curi.getUURI(),value.toString());
                         curi.setBaseURI(base);
                     } catch (URIException e) {
                         logUriError(e, curi.getUURI(), value);
@@ -679,13 +682,15 @@ public class ExtractorHTML extends ContentExtractor implements InitializingBean 
 
             logger.fine("Found srcset listing: " + value.toString());
 
-            String[] links = value.toString().split(",");
-            for (int i=0; i < links.length; i++){
-                String link = links[i].trim().split(" +")[0];
+            Matcher matcher = TextUtils.getMatcher("[\\s,]*(\\S*[^,\\s])(?:\\s(?:[^,(]+|\\([^)]*(?:\\)|$))*)?", value);
+            while (matcher.lookingAt()) {
+                String link = matcher.group(1);
+                matcher.region(matcher.end(), matcher.regionEnd());
                 logger.finer("Found " + link + " adding to outlinks.");
                 addLinkFromString(curi, link, context, hop);
                 numberOfLinksExtracted.incrementAndGet();
             }
+            TextUtils.recycleMatcher(matcher);
         } else {
             addLinkFromString(curi,
                 (value instanceof String)?

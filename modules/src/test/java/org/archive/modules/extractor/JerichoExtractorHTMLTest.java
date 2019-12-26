@@ -155,7 +155,7 @@ public class JerichoExtractorHTMLTest extends ExtractorHTMLTest {
     @Override
     public void testConditionalComment1() throws URIException {
     }
-    
+
     /*
      * Override of ExtractorHTMLTest method because the test fails with
      * JerichoExtractorHTML

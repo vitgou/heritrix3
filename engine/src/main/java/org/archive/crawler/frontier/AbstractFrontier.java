@@ -271,6 +271,13 @@ public abstract class AbstractFrontier
     protected AtomicLong totalProcessedBytes = new AtomicLong(0);
 
     /**
+     * count of queues getting readied. per-second count
+     * is useful for determining whether there's enough active
+     * queues.
+     */
+    protected AtomicLong queueReadiedCount = new AtomicLong(0);
+
+    /**
      * Crawl replay logger.
      * 
      * Currently captures Frontier/URI transitions.
@@ -614,21 +621,27 @@ public abstract class AbstractFrontier
         // Tally per-server, per-host, per-frontier-class running totals
         CrawlServer server = getServerCache().getServerFor(curi.getUURI());
         if (server != null) {
-            server.getSubstats().tally(curi, stage);
-            server.makeDirty(); 
+            synchronized (server) {
+                server.getSubstats().tally(curi, stage);
+                server.makeDirty();
+            }
         }
         try {
             CrawlHost host = getServerCache().getHostFor(curi.getUURI());
             if (host != null) {
-                host.getSubstats().tally(curi, stage);
-                host.makeDirty();
+                synchronized (host) {
+                    host.getSubstats().tally(curi, stage);
+                    host.makeDirty();
+                }
             }
         } catch (Exception e) {
             logger.log(Level.WARNING, "unable to tally host stats for " + curi, e);
         }
         FrontierGroup group = getGroup(curi);
-        group.tally(curi, stage);
-        group.makeDirty(); 
+        synchronized (group) {
+            group.tally(curi, stage);
+            group.makeDirty();
+        }
     }
 
     protected void doJournalFinishedSuccess(CrawlURI c) {

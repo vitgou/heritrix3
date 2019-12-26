@@ -7,6 +7,10 @@ jdk:
  - openjdk7
  - openjdk8
 
+matrix:
+  allow_failures:
+  - jdk: openjdk7
+
 before_install:
  - "export JAVA_OPTS=-Xmx1500m"
  - "echo JAVA_OPTS=$JAVA_OPTS"
@@ -15,10 +19,13 @@ before_install:
  - "export _JAVA_OPTIONS=-Xmx1500m"
  - "echo _JAVA_OPTIONS=$_JAVA_OPTIONS"
 
+cache:
+  directories:
+  - $HOME/.m2
+
 script:
- - mvn clean install
- - cd contrib && mvn clean install
- - cd ..
+ - travis_wait 30 mvn install
+ - cd contrib && mvn install
 
 after_failure:
   - cat */target/surefire-reports/*.txt
