@@ -62,3 +62,14 @@ libraries can be found under the 'lib' directory, and are used under
 the terms of their respective licenses, which are included alongside
 the libraries in the 'lib' directory.
 
+## 7. Update Heritrix
+
+```bash
+git clone https://github.com/arquivo/heritrix3.git
+cd heritrix3/
+git remote add upstream https://github.com/internetarchive/heritrix3.git
+git fetch upstream
+git checkout master (your repository)
+git merge 3.4.0-20190418 (Name tag or Name branch from internetarchive/heritrix3.git)
+git push
+```
