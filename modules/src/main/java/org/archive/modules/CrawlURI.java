@@ -31,9 +31,6 @@ import static org.archive.modules.CoreAttributeConstants.A_HTTP_RESPONSE_HEADERS
 import static org.archive.modules.CoreAttributeConstants.A_NONFATAL_ERRORS;
 import static org.archive.modules.CoreAttributeConstants.A_PREREQUISITE_URI;
 import static org.archive.modules.CoreAttributeConstants.A_SOURCE_TAG;
-import static org.archive.modules.CoreAttributeConstants.A_SUBMIT_DATA;
-import static org.archive.modules.CoreAttributeConstants.A_SUBMIT_ENCTYPE;
-import static org.archive.modules.CoreAttributeConstants.A_WARC_RESPONSE_HEADERS;
 import static org.archive.modules.SchedulingConstants.NORMAL;
 import static org.archive.modules.fetcher.FetchStatusCodes.S_BLOCKED_BY_CUSTOM_PROCESSOR;
 import static org.archive.modules.fetcher.FetchStatusCodes.S_BLOCKED_BY_USER;
@@ -60,7 +57,6 @@ import static org.archive.modules.fetcher.FetchStatusCodes.S_TOO_MANY_RETRIES;
 import static org.archive.modules.fetcher.FetchStatusCodes.S_UNATTEMPTED;
 import static org.archive.modules.fetcher.FetchStatusCodes.S_UNFETCHABLE_URI;
 import static org.archive.modules.recrawl.RecrawlAttributeConstants.A_CONTENT_DIGEST_HISTORY;
-import static org.archive.modules.recrawl.RecrawlAttributeConstants.A_FETCH_HISTORY;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -76,7 +72,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -126,6 +121,8 @@ implements Reporter, Serializable, OverlayContext, Comparable<CrawlURI> {
         Logger.getLogger(CrawlURI.class.getName());
 
     public static final int UNCALCULATED = -1;
+    /** fetch history array */
+    public static final String A_FETCH_HISTORY = "fetch-history";
     
     public static enum FetchType { HTTP_GET, HTTP_POST, UNKNOWN };
 
@@ -248,15 +245,6 @@ implements Reporter, Serializable, OverlayContext, Comparable<CrawlURI> {
      * buggy
      */
     protected long ordinal;
-    
-    /**
-     * Array to hold keys of data members that persist across URI processings.
-     * Any key mentioned in this list will not be cleared out at the end
-     * of a pass down the processing chain.
-     */
-    private static final Collection<String> persistentKeys
-     = new CopyOnWriteArrayList<String>(
-            new String [] {A_CREDENTIALS_KEY, A_HTTP_AUTH_CHALLENGES, A_SUBMIT_DATA, A_WARC_RESPONSE_HEADERS, A_ANNOTATIONS, A_SUBMIT_ENCTYPE});
 
     /** maximum length for pathFromSeed/hopsPath; longer truncated with leading counter **/ 
     private static final int MAX_HOPS_DISPLAYED = 50;
@@ -875,8 +863,6 @@ implements Reporter, Serializable, OverlayContext, Comparable<CrawlURI> {
         this.contentLength = UNCALCULATED;
         // Clear 'links extracted' flag.
         this.linkExtractorFinished = false;
-        // Clean the data map of all but registered permanent members.
-        this.data = getPersistentDataMap();
         
         extraInfo = null;
         outLinks = null;
@@ -885,23 +871,6 @@ implements Reporter, Serializable, OverlayContext, Comparable<CrawlURI> {
         
         // XXX er uh surprised this wasn't here before?
         fetchType = FetchType.UNKNOWN;
-    }
-    
-    public Map<String,Object> getPersistentDataMap() {
-        if (data == null) {
-            return null;
-        }
-        Map<String,Object> result = new HashMap<String,Object>(getData());
-        Set<String> retain = new HashSet<String>(persistentKeys);
-        
-        if (containsDataKey(A_HERITABLE_KEYS)) {
-            @SuppressWarnings("unchecked")
-            HashSet<String> heritable = (HashSet<String>)getData().get(A_HERITABLE_KEYS);
-            retain.addAll(heritable);
-        }
-        
-        result.keySet().retainAll(retain);
-        return result;
     }
 
     /**
@@ -1131,39 +1100,6 @@ implements Reporter, Serializable, OverlayContext, Comparable<CrawlURI> {
             return getUURI();
         }
         return (UURI)getData().get(A_HTML_BASE);
-    }
-    
-    public static Collection<String> getPersistentDataKeys() {
-        return persistentKeys;
-    }
-
-    /**
-     * Add the key of  items you want to persist across
-     * processings.
-     * @param s Key to add.
-     */
-    public void addPersistentDataMapKey(String s) {
-        if (!persistentKeys.contains(s)) {
-            addDataPersistentMember(s);
-        }
-    }
-    
-    /**
-     * Add the key of data map items you want to persist across
-     * processings.
-     * @param key Key to add.
-     */
-    public static void addDataPersistentMember(String key) {
-        persistentKeys.add(key);
-    }
-    
-    /**
-     * Remove the key from those data map members persisted. 
-     * @param key Key to remove.
-     * @return True if list contained the element.
-     */
-    public static boolean removeDataPersistentMember(String key) {
-        return persistentKeys.remove(key);
     }
 
     private void writeObject(ObjectOutputStream stream) throws IOException {
@@ -1782,9 +1718,7 @@ implements Reporter, Serializable, OverlayContext, Comparable<CrawlURI> {
         return containsDataKey(A_FORCE_RETIRE) 
          && (Boolean)getData().get(A_FORCE_RETIRE);
     }
-    
-    
-    
+
     protected JSONObject extraInfo;
 
     public JSONObject getExtraInfo() {
@@ -1892,6 +1826,10 @@ implements Reporter, Serializable, OverlayContext, Comparable<CrawlURI> {
     @SuppressWarnings("unchecked")
     public HashMap<String, Object>[] getFetchHistory() {
         return (HashMap<String,Object>[]) getData().get(A_FETCH_HISTORY);
+    }
+
+    public void setFetchHistory(Map<String, Object>[] history) {
+        getData().put(A_FETCH_HISTORY, history);
     }
         
     public HashMap<String, Object> getContentDigestHistory() {
