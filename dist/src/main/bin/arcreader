@@ -29,5 +29,50 @@ then
     HERITRIX_HOME=`cd "$PRGDIR/.." ; pwd`
 fi
 
-FOREGROUND='true' CLASS_MAIN='org.archive.io.arc.ARCReader' JMX_OFF='off' \
+CLASS_MAIN_ARC="org.archive.io.arc.ARCReader"
+
+# Option strings
+SHORT=dfhops
+LONG=digest,format,help,offset,parse,strict
+
+# Preserve the $@ into a BASH array
+args=("$@")
+
+# read the options
+OPTS=$(getopt --options $SHORT --long $LONG --name "$0" -- "$@")
+
+if [ $? != 0 ] ; then echo "Failed to parse options...exiting." >&2 ; exit 1 ; fi
+
+eval set -- "$OPTS"
+
+while true ; do
+  case "$1" in
+    -d | --digest )
+      shift
+      ;;
+    -f | --format )
+      shift
+      ;;
+    -h | --help )
+      shift
+      ;;
+    -p | --parse )
+      shift
+      ;;
+    -s | --strict )
+      shift
+      ;;
+    -- )
+      [[ ${2: -8} = ".warc.gz" ]] && CLASS_MAIN_ARC="org.archive.io.warc.WARCReader"
+      shift
+      break
+      ;;
+    *)
+      echo "Internal error!"
+      exit 1
+      ;;
+  esac
+done
+
+FOREGROUND='true' CLASS_MAIN=$CLASS_MAIN_ARC JMX_OFF='off' \
     $HERITRIX_HOME/bin/heritrix $@
