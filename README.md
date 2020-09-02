@@ -34,7 +34,6 @@ Heritrix is free software; you can redistribute it and/or modify it under the te
 
 Some individual source code files are subject to or offered under other licenses. See the included [`LICENSE.txt`](./LICENSE) file for more information.
 
-<<<<<<< HEAD
 ## 5. Latest Releases
 
 Information about releases can be found at <https://github.com/internetarchive/heritrix3/wiki#latest-releases>
@@ -68,4 +67,3 @@ git push
 ```
 =======
 Heritrix is distributed with the libraries it depends upon. The libraries can be found under the `lib` directory in the release distribution, and are used under the terms of their respective licenses, which are included alongside the libraries in the `lib` directory.
->>>>>>> 3.4.0-20200304
